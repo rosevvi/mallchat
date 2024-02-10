@@ -7,6 +7,7 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
+import io.netty.handler.timeout.IdleStateHandler;
 import org.springframework.stereotype.Component;
 
 /**
@@ -21,6 +22,8 @@ public class ServerChannelInitializer extends ChannelInitializer<SocketChannel> 
     @Override
     protected void initChannel(SocketChannel socketChannel) throws Exception {
         ChannelPipeline pipeline = socketChannel.pipeline();
+        // 没有向服务器发起心跳则关闭连接  读：前端有没有向后端发  写：后端有没有向前端发
+        pipeline.addLast(new IdleStateHandler(30,0,0));
         // 因为使用http协议所以使用http的解码器和编码器
         pipeline.addLast(new HttpServerCodec());
         // 以块的方式写，添加ChunkedWrite 处理器
